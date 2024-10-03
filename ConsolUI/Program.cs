@@ -3,6 +3,7 @@ using Business.Concrete;
 using System;
 using Entities.Concrete;
 using DataAccess.Concrete.EntityFrameworkk;
+using Core.Utilis.Results;
 
 namespace ConsolUI
 {
@@ -20,10 +21,10 @@ namespace ConsolUI
             //UpdateBrand();
             // DeleteBrand();
 
-            //AddColor(mavi,2);
-            //TestColors();
+            //AddColor("mavi",2);
+            TestColors();
             //ColorUpdateTest();
-            //ColorDeleted(1);
+            //ColorDeleted(2);
 
             Console.WriteLine("Calisti");
 
@@ -32,10 +33,11 @@ namespace ConsolUI
         private static void ColorDeleted(int id)
         {
             ColorManager colorManager = new ColorManager(new EfColorDal());
-            Color deletedColor = colorManager.GetColourById(id);
-            if (deletedColor != null)
+            var result = colorManager.GetColorById(id);
+            if (result.Success && result.Data != null)
             {
-                colorManager.DeleteColor(deletedColor);
+
+                colorManager.DeleteColor(result.Data);
                 Console.WriteLine("Islem basariyla gerceklestirildi");
                 TestColors();
             }
@@ -48,11 +50,11 @@ namespace ConsolUI
         private static void ColorUpdateTest()
         {
             ColorManager colorManager = new ColorManager(new EfColorDal());
-            Color updatedColor = colorManager.GetColourById(1);
-            if (updatedColor != null)
+            var result = colorManager.GetColorById(1);
+            if (result.Success && result.Data != null)
             {
-                updatedColor.Name = "Turkuaz";
-                colorManager.UpdateColor(updatedColor);
+                result.Data.Name = "Turkuaz";
+                colorManager.UpdateColor(result.Data);
                 TestColors();
             }
             else
@@ -65,11 +67,22 @@ namespace ConsolUI
         {
             ColorManager colorManager = new ColorManager(new EfColorDal());
 
-            foreach (var color in colorManager.GetColors())
+            var result = colorManager.GetColors();
+
+            if (result.Success && result.Data != null)
             {
-                Console.WriteLine(color.Name + " adinda renk var");
+                foreach (var color in result.Data)
+                {
+                    Console.WriteLine(color.Name);
+                    
+                }
+            }
+            else
+            {
+                Console.WriteLine("burasi");
             }
         }
+
 
         private static void AddColor(string renk, int id)
         {
@@ -81,41 +94,41 @@ namespace ConsolUI
         private static void DeleteBrand()
         {
             BrandManager brandManager = new BrandManager(new EfBrandDal());
-            Brand deletedBrand = brandManager.GetById(1);
-            if (deletedBrand != null)
+            var result = brandManager.GetById(1);
+            if (result.Success && result.Data != null)
             {
-                brandManager.Delete(deletedBrand);
+                brandManager.Delete(result.Data);
                 TestBrands();
             }
             else
             {
-                Console.WriteLine("Marka bulunamadi");
+                Console.WriteLine("Marka bulunamadi: " + result.Message);
             }
         }
 
         private static void UpdateBrand()
         {
             BrandManager brandManager = new BrandManager(new EfBrandDal());
-            Brand updatedBrand = brandManager.GetById(1);
-            if (updatedBrand != null)
+            var result = brandManager.GetById(1);
+            if (result.Success && result.Data != null)
             {
                 //  updatedBrand.ID = 5;
-                updatedBrand.Name = "Skoda";
-                brandManager.Update(updatedBrand);
+                result.Data.Name = "Skoda";
+                brandManager.Update(result.Data);
                 TestBrands();
             }
             else
             {
-                Console.WriteLine("Marka bulunamadi");
+                Console.WriteLine("Marka guncellenemedi: " + result.Message);
             }
         }
 
         private static void TestBrands()
         {
             BrandManager brandManager = new BrandManager(new EfBrandDal());
-            List<Brand> brands = brandManager.GetAll();
+            IDataResult<List<Brand>> brands = brandManager.GetAll();
 
-            foreach (Brand brand in brands)
+            foreach (var brand in brands.Data)
             {
                 Console.WriteLine(brand.ID + " " + brand.Name);
             }
@@ -132,39 +145,68 @@ namespace ConsolUI
         {
             CarManager carManager = new CarManager(new EfCarDal());
 
-            Car updatedCar = carManager.GetAll().Last();
-            if (updatedCar != null)
+            // GetAll metodu bir IDataResult<List<Car>> döndürür
+            var result = carManager.GetAll();
+
+            // Eğer işlem başarılı ise ve veri mevcutsa
+            if (result.Success && result.Data != null && result.Data.Any())
             {
+                // Son arabayı alıyoruz
+                Car updatedCar = result.Data.Last();
+
+                // Arabayı güncelliyoruz
                 updatedCar.DailyPrice = 1000;
                 updatedCar.Description = "Guncellendi";
 
                 carManager.Update(updatedCar);
+                Console.WriteLine("Araba başarıyla güncellendi.");
             }
             else
             {
-                Console.WriteLine("Arac bulunamadi");
+                Console.WriteLine("Araba bulunamadı ya da güncelleme işlemi başarısız.");
             }
         }
+
 
         private static void CarDelete(int carID)
         {
             CarManager carManager = new CarManager(new EfCarDal());
-            carManager.Delete(carManager.GetCarById(carID));
+            var result = carManager.GetCarById(carID);
+            if (result.Success && result.Data != null)
+            {
+                carManager.Delete(result.Data);
+            }
+            else
+            {
+                Console.WriteLine(result.Message);
+            }
+
         }
 
         private static void CarTest()
         {
             CarManager carManager = new CarManager(new EfCarDal());
-            foreach (var car in carManager.GetAll())
+
+            var result = carManager.GetAll();
+            if (result.Success == true && result.Data != null)
             {
-                Console.WriteLine("Car ID: " + car.ID + " Brand ID: " + car.BrandID + " Color ID: " + car.ColorID + " Model Year: " + car.ModelYear + " Daily Price: " + car.DailyPrice + " Description: " + car.Description);
+                foreach (var car in result.Data)
+                {
+                    Console.WriteLine("Car ID: " + car.ID + " Brand ID: " + car.BrandID + " Color ID: " + car.ColorID + " Model Year: " + car.ModelYear + " Daily Price: " + car.DailyPrice + " Description: " + car.Description);
+                }
             }
+            else
+            {
+                Console.WriteLine("Araba listelenemedi: " + result
+                    .Message);
+            }
+
         }
 
         private static void AddCar()
         {
             CarManager carManager = new CarManager(new EfCarDal());
-            Car car1 = new Car { ID = 2, BrandID = 2, ColorID = 2, ModelYear = "2022", DailyPrice = 1500, Description = "BMW 2025" };
+            Car car1 = new Car { ID = 5, BrandID = 2, ColorID = 2, ModelYear = "2025", DailyPrice = 2500, Description = "Corolla 2025" };
 
             carManager.Add(car1);
         }

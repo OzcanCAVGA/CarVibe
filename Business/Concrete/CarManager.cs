@@ -1,4 +1,6 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Utilis.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFrameworkk;
 using Entities.Concrete;
@@ -19,58 +21,96 @@ namespace Business.Concrete
             _carDal = carDal;
         }
 
-        public void Add(Car car)
+        public IResult Add(Car car)
         {
             if (car.Description.Length >= 2 && car.DailyPrice > 0)
             {
                 _carDal.Add(car);
+                return new SuccessResult(Messages.Added);
             }
             else
             {
-                Console.WriteLine("Araba ismi minimum 2 karakter olmalıdır ve günlük fiyatı 0'dan büyük olmalıdır.");
+                return new ErrorResult(Messages.NameInvalid);
             }
         }
-        public void Update(Car car)
+        public IResult Update(Car car)
         {
+            if (car == null)
+            {
+                return new ErrorResult(Messages.NotFound);
+            }
             _carDal.Update(car);
+            return new SuccessResult(Messages.Updated);
         }
-        public void Delete(Car car)
+        public IResult Delete(Car car)
         {
+            if (car == null)
+            {
+                return new ErrorResult(Messages.NotFound);
+            }
             _carDal.Delete(car);
+            return new SuccessResult(Messages.Deleted);
         }
 
-        public List<Car> GetAll()
+        public IDataResult<List<Car>> GetAll()
         {
-            // is kodlari
-            // Yetkisi var mi?
-            // vs vs
-            return _carDal.GetAll();
+            if (DateTime.Now.Hour == 22)
+            {
+                return new ErrorDataResult<List<Car>>(Messages.MaintenanceTime);
+            }
+
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(), Messages.Listed);
         }
-        public List<Car> GetCarsByBrandId(int brandId)
+        public IDataResult<List<Car>> GetCarsByBrandId(int brandId)
         {
 
-            return _carDal.GetAll(c => c.BrandID == brandId);
+            if (_carDal.Get(b => b.ID == brandId) == null)
+            {
+                return new ErrorDataResult<List<Car>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.BrandID == brandId));
         }
-        public List<Car> GetCarsByColorId(int colorId)
+        public IDataResult<List<Car>> GetCarsByColorId(int colorId)
         {
+            if (_carDal.Get(b => b.ID == colorId) == null)
+            {
+                return new ErrorDataResult<List<Car>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.ColorID == colorId));
 
-            return _carDal.GetAll(c => c.ColorID == colorId);
-
-        }
-
-        public Car GetCarById(int id)
-        {
-            return _carDal.Get(c => c.ID == id);
-        }
-
-        public List<Car> GetCars()
-        {
-            return _carDal.GetAll();
         }
 
-        public List<CarDetailDto> GetCarDetails()
+        public IDataResult<Car> GetCarById(int id)
         {
-            return _carDal.GetCarDetails();
+            if (_carDal.GetAll(b => b.ID == id) == null)
+            {
+                return new ErrorDataResult<Car>(Messages.NotFound);
+            }
+            return new SuccessDataResult<Car>(_carDal.Get(b => b.ID == id));
+           
+        }
+
+        public IDataResult<List<Car>> GetCars()
+        {
+            if (_carDal.GetAll() == null)
+            {
+                return new ErrorDataResult<List<Car>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll());
+        }
+
+        public IDataResult<List<CarDetailDto>> GetCarDetails()
+        {
+            if (_carDal.GetAll() == null)
+            {
+                return new ErrorDataResult<List<CarDetailDto>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
+        }
+
+        IDataResult<Car> ICarService.GetCarById(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

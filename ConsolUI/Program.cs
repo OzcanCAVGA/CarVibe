@@ -25,7 +25,7 @@ namespace ConsolUI
             //ColorUpdateTest();
             //ColorDeleted(1);
 
-
+            Console.WriteLine("Calisti");
 
         }
 

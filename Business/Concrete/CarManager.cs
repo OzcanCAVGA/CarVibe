@@ -2,6 +2,7 @@
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFrameworkk;
 using Entities.Concrete;
+using Entities.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,14 @@ namespace Business.Concrete
                 Console.WriteLine("Araba ismi minimum 2 karakter olmalıdır ve günlük fiyatı 0'dan büyük olmalıdır.");
             }
         }
+        public void Update(Car car)
+        {
+            _carDal.Update(car);
+        }
+        public void Delete(Car car)
+        {
+            _carDal.Delete(car);
+        }
 
         public List<Car> GetAll()
         {
@@ -47,6 +56,21 @@ namespace Business.Concrete
 
             return _carDal.GetAll(c => c.ColorID == colorId);
 
+        }
+
+        public Car GetCarById(int id)
+        {
+            return _carDal.Get(c => c.ID == id);
+        }
+
+        public List<Car> GetCars()
+        {
+            return _carDal.GetAll();
+        }
+
+        public List<CarDetailDto> GetCarDetails()
+        {
+            return _carDal.GetCarDetails();
         }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using Entities.Concrete;
 using DataAccess.Concrete.EntityFrameworkk;
 using Core.Utilis.Results;
+using Business.Constants;
 
 namespace ConsolUI
 {
@@ -22,12 +23,146 @@ namespace ConsolUI
             // DeleteBrand();
 
             //AddColor("mavi",2);
-            TestColors();
+            //TestColors();
             //ColorUpdateTest();
             //ColorDeleted(2);
 
-            Console.WriteLine("Calisti");
+            //Console.WriteLine("Calisti");
 
+
+            //AddUser();
+            //TestUsers();
+            //UpdateUser();
+            //DeleteUser();
+
+            //AddCustomer();
+            //TestCustomers();
+            //UpdateCustomer();
+            //DeleteCustomer();
+
+             //AddRental();
+            ReturnCar();
+
+
+
+        }
+
+        private static void ReturnCar()
+        {
+            RentalManager rentalManager = new RentalManager(new EfRentalDal());
+            var returnRental = rentalManager.GetRentalById(6);
+            rentalManager.ReturnCar(returnRental.Data);
+        }
+
+        private static void AddRental()
+        {
+            RentalManager rentalManager = new RentalManager(new EfRentalDal());
+
+            Rental rental = new Rental() { CarId = 2, CustomerId = 2, RentDate = DateTime.Now };
+            rentalManager.AddRental(rental);
+        }
+
+        private static void DeleteCustomer()
+        {
+            CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
+
+            var result = customerManager.GetCustomerById(2);
+            if (result.Success && result.Data != null)
+            {
+
+                customerManager.DeleteCustomer(result.Data);
+                Console.WriteLine(Messages.Deleted);
+                TestCustomers();
+            }
+            else
+            {
+                Console.WriteLine(Messages.NotFound);
+            }
+        }
+
+        private static void UpdateCustomer()
+        {
+            CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
+            var result = customerManager.GetCustomerById(2);
+            if (result.Success && result.Data != null)
+            {
+                result.Data.CompanyName = "Volvo";
+                customerManager.UpdateCustomer(result.Data);
+                TestCustomers();
+            }
+            else
+            {
+                Console.WriteLine(Messages.NotFound);
+            }
+        }
+
+        private static void TestCustomers()
+        {
+            CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
+            IDataResult<List<Customer>> customers = customerManager.GetAllCustomers();
+
+            foreach (var customer in customers.Data)
+            {
+                Console.WriteLine(customer.ID + " UserId: " + customer.UserId + " " + customer.CompanyName);
+            }
+        }
+
+        private static void AddCustomer()
+        {
+            CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
+            Customer customer = new Customer() { UserId = 2, CompanyName = "BMW" };
+            customerManager.AddCustomer(customer);
+        }
+
+        private static void DeleteUser()
+        {
+            UserManager userManager = new UserManager(new EfUserDal());
+            var result = userManager.GetUserById(4);
+            if (result.Success && result.Data != null)
+            {
+
+                userManager.DeleteUser(result.Data);
+                Console.WriteLine(Messages.Deleted);
+                TestUsers();
+            }
+            else
+            {
+                Console.WriteLine("Renk bulunamadi");
+            }
+        }
+
+        private static void UpdateUser()
+        {
+            UserManager userManager = new UserManager(new EfUserDal());
+            var result = userManager.GetUserById(2);
+            if (result.Success && result.Data != null)
+            {
+                result.Data.FirstName = "Fatih Isa";
+                userManager.UpdateUser(result.Data);
+                TestUsers();
+            }
+            else
+            {
+                Console.WriteLine(Messages.NotFound);
+            }
+        }
+
+        private static void TestUsers()
+        {
+            UserManager userManager = new UserManager(new EfUserDal());
+            IDataResult<List<User>> users = userManager.GetAllUsers();
+
+            foreach (var user in users.Data)
+            {
+                Console.WriteLine(user.ID + " " + user.FirstName + " " + user.LastName);
+            }
+        }
+
+        private static void AddUser()
+        {
+            UserManager userManager = new UserManager(new EfUserDal());
+            User user = new User() { FirstName = "Silinecek", LastName = "Kayit", Email = "delete@gmail.com", Password = "123456" };
+            userManager.AddUser(user);
         }
 
         private static void ColorDeleted(int id)
@@ -74,7 +209,7 @@ namespace ConsolUI
                 foreach (var color in result.Data)
                 {
                     Console.WriteLine(color.Name);
-                    
+
                 }
             }
             else

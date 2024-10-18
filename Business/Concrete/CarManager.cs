@@ -82,7 +82,7 @@ namespace Business.Concrete
 
         public IDataResult<Car> GetCarById(int id)
         {
-            if (_carDal.GetAll(b => b.ID == id) == null)
+            if (_carDal.Get(b => b.ID == id) == null)
             {
                 return new ErrorDataResult<Car>(Messages.NotFound);
             }

@@ -15,5 +15,9 @@ namespace Business.Constants
         public static string Listed = "Kayit listelendi";
         public static string NotFound = "Kayit bulunamadi";
         public static string MaintenanceTime = "Sistem bakimda";
+        public static string RentalAdded = "Araba kiralandı";
+        public static string CarIsNotAvaible = "Araba müsait değil";
+        public static string ReturnCar = "Araba teslim edildi";
+        
     }
 }

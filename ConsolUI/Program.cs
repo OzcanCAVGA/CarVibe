@@ -40,8 +40,8 @@ namespace ConsolUI
             //UpdateCustomer();
             //DeleteCustomer();
 
-             //AddRental();
-            ReturnCar();
+            //AddRental();
+            //ReturnCar();
 
 
 

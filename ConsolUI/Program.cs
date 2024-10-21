@@ -303,20 +303,20 @@ namespace ConsolUI
         }
 
 
-        private static void CarDelete(int carID)
-        {
-            CarManager carManager = new CarManager(new EfCarDal());
-            var result = carManager.GetCarById(carID);
-            if (result.Success && result.Data != null)
-            {
-                carManager.Delete(result.Data);
-            }
-            else
-            {
-                Console.WriteLine(result.Message);
-            }
+        //private static void CarDelete(int carID)
+        //{
+        //    CarManager carManager = new CarManager(new EfCarDal());
+        //    var result = carManager.GetCarById(carID);
+        //    if (result.Success && result.Data != null)
+        //    {
+        //        carManager.Delete(result);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine(result.Message);
+        //    }
 
-        }
+        //}
 
         private static void CarTest()
         {

@@ -1,4 +1,6 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Entities.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +15,40 @@ namespace WebAPI.Controllers
         public CarsController(ICarService carService)
         {
             _carService = carService;
+        }
+
+        [HttpPost("add")]
+        public IActionResult Add(Car car)
+        {
+            if (car != null)
+            {
+                _carService.Add(car);
+                return Ok(Messages.Added);
+            }
+            return BadRequest(Messages.NotFound);
+        }
+
+        [HttpPost("update")]
+        public IActionResult Update(Car car)
+        {
+            if (car != null)
+            {
+                _carService.Update(car);
+                return Ok(Messages.Updated);
+            }
+            return BadRequest(Messages.NotFound);
+        }
+
+        [HttpPost("delete")]
+        public IActionResult Delete(int id)
+        {
+            var result = _carService.GetCarById(id);
+            if (result != null)
+            {
+                _carService.Delete(result);
+                return Ok(Messages.Deleted);
+            }
+            return BadRequest(Messages.NotFound);
         }
 
         [HttpGet("getall")]
@@ -35,6 +71,7 @@ namespace WebAPI.Controllers
             }
             return BadRequest(result.Message);
         }
+
         [HttpGet("getcarsbybrandid")]
         public IActionResult GetCarsByBrandId(int brandid)
         {
@@ -56,5 +93,19 @@ namespace WebAPI.Controllers
             }
             return BadRequest(result.Message);
         }
+
+        [HttpGet("getcardetails")]
+        public IActionResult GetCarDetails()
+        {
+            var result = _carService.GetCarDetails();
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.Message);
+        }
+
+
+
     }
 }

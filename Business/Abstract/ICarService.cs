@@ -13,14 +13,14 @@ namespace Business.Abstract
     {
         public IResult Add(Car car);
         public IResult Update(Car car);
-        public IResult Delete(Car car);
+        public IResult Delete(IDataResult<Car> car);
 
         public IDataResult<Car> GetCarById(int id);
-        public IDataResult<List<Car>> GetCars();
         public IDataResult<List<CarDetailDto>> GetCarDetails();
 
         public IDataResult<List<Car>> GetAll();
         public IDataResult<List<Car>> GetCarsByBrandId(int brandId);
         public IDataResult<List<Car>> GetCarsByColorId(int colorId);
+       // void Delete(IDataResult<Car> result);
     }
 }

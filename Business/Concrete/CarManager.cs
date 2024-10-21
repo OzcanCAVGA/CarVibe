@@ -21,7 +21,7 @@ namespace Business.Concrete
             _carDal = carDal;
         }
 
-        public IResult Add(Car car)
+        public IResult Add(Car car) 
         {
             if (car.Description.Length >= 2 && car.DailyPrice > 0)
             {
@@ -33,7 +33,7 @@ namespace Business.Concrete
                 return new ErrorResult(Messages.NameInvalid);
             }
         }
-        public IResult Update(Car car)
+        public IResult Update(Car car) 
         {
             if (car == null)
             {
@@ -42,17 +42,18 @@ namespace Business.Concrete
             _carDal.Update(car);
             return new SuccessResult(Messages.Updated);
         }
-        public IResult Delete(Car car)
+        public IResult Delete(IDataResult<Car> car) 
         {
+       
             if (car == null)
             {
                 return new ErrorResult(Messages.NotFound);
             }
-            _carDal.Delete(car);
+            _carDal.Delete(car.Data);
             return new SuccessResult(Messages.Deleted);
         }
 
-        public IDataResult<List<Car>> GetAll()
+        public IDataResult<List<Car>> GetAll() 
         {
             if (DateTime.Now.Hour == 01)
             {
@@ -61,7 +62,7 @@ namespace Business.Concrete
 
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(), Messages.Listed);
         }
-        public IDataResult<List<Car>> GetCarsByBrandId(int brandId)
+        public IDataResult<List<Car>> GetCarsByBrandId(int brandId) 
         {
 
             if (_carDal.Get(b => b.ID == brandId) == null)
@@ -70,7 +71,7 @@ namespace Business.Concrete
             }
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.BrandID == brandId));
         }
-        public IDataResult<List<Car>> GetCarsByColorId(int colorId)
+        public IDataResult<List<Car>> GetCarsByColorId(int colorId) 
         {
             if (_carDal.Get(b => b.ID == colorId) == null)
             {
@@ -80,26 +81,18 @@ namespace Business.Concrete
 
         }
 
-        public IDataResult<Car> GetCarById(int id)
+        public IDataResult<Car> GetCarById(int id) 
         {
             if (_carDal.Get(b => b.ID == id) == null)
             {
                 return new ErrorDataResult<Car>(Messages.NotFound);
             }
             return new SuccessDataResult<Car>(_carDal.Get(b => b.ID == id));
-           
+
         }
 
-        public IDataResult<List<Car>> GetCars()
-        {
-            if (_carDal.GetAll() == null)
-            {
-                return new ErrorDataResult<List<Car>>(Messages.NotFound);
-            }
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll());
-        }
 
-        public IDataResult<List<CarDetailDto>> GetCarDetails()
+        public IDataResult<List<CarDetailDto>> GetCarDetails() 
         {
             if (_carDal.GetAll() == null)
             {
@@ -107,6 +100,7 @@ namespace Business.Concrete
             }
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
         }
+
 
     }
 }

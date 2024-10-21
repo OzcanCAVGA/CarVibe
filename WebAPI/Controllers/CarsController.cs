@@ -24,7 +24,7 @@ namespace WebAPI.Controllers
                 _carService.Add(car);
                 return Ok(Messages.Added);
             }
-            return BadRequest(Messages.NotFound);
+            return BadRequest(Messages.NameInvalid);
         }
 
         [HttpPost("update")]

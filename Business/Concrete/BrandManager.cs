@@ -68,7 +68,7 @@ namespace Business.Concrete
             {
                 return new ErrorDataResult<Brand>(Messages.NotFound);
             }
-            return new SuccessDataResult<Brand>(_brandDal.Get(b => b.ID == id));
+            return new SuccessDataResult<Brand>(_brandDal.Get(b => b.ID == id), Messages.Listed);
 
         }
 

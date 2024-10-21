@@ -10,11 +10,11 @@ namespace Core.Utilis.Results
     {
         public SuccessResult(string message) : base(true, message)
         {
-            
+            Console.WriteLine("Success result 1.constructor calisti");
         }
         public SuccessResult() : base(true)
         {
-
+            Console.WriteLine("Success result 2.constructor calisti");
         }
     }
 }

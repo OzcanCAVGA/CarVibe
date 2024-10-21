@@ -42,6 +42,13 @@ namespace Business.Concrete
             {
                 return new ErrorResult(Messages.NotFound);
             }
+
+            var existingColor = _colorDal.Get(c => c.ID == color.ID);
+            if (existingColor == null)
+            {
+                return new ErrorResult(Messages.NotFound);
+            }
+
             _colorDal.Update(color);
             return new SuccessResult(Messages.Updated);
         }
@@ -57,7 +64,7 @@ namespace Business.Concrete
 
         public IDataResult<Color> GetColorById(int id)
         {
-            if (_colorDal.GetAll(b => b.ID == id) == null)
+            if (_colorDal.Get(b => b.ID == id) == null)
             {
                 return new ErrorDataResult<Color>(Messages.NotFound);
             }

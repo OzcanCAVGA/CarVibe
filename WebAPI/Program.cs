@@ -16,6 +16,9 @@ builder.Services.AddSingleton<IColorDal, EfColorDal>();
 builder.Services.AddSingleton<IBrandService, BrandManager>();
 builder.Services.AddSingleton<IBrandDal, EfBrandDal>();
 
+builder.Services.AddSingleton<ICustomerService, CustomerManager>();
+builder.Services.AddSingleton<ICustomerDal, EfCustomerDal>();
+
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

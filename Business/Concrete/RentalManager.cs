@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspect.Autofac.Validation;
 using Core.Utilis.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFrameworkk;
@@ -22,26 +24,28 @@ namespace Business.Concrete
             _rentalDal = rentalDal;
         }
 
+        [ValidationAspect(typeof(RentalValidator))]
         public IResult AddRental(Rental rental)
         {
-            bool isCarAvaible = !(_rentalDal.GetAll(r => r.CarId == rental.CarId && r.ReturnDate == null).Any());
-            if (isCarAvaible == true)
-            {
-                _rentalDal.Add(rental);
-                return new SuccessResult(Messages.RentalAdded);
-            }
-            else
+            bool isCarAvaible = (_rentalDal.GetAll(r => r.CarId == rental.CarId && r.ReturnDate == null).Count == 0);
+            if (!isCarAvaible)
             {
                 return new ErrorResult(Messages.CarIsNotAvaible);
+
             }
+            _rentalDal.Add(rental);
+            return new SuccessResult(Messages.RentalAdded);
         }
 
         public IResult DeleteRental(Rental rental)
         {
-            if (rental == null)
+
+            var result = CheckIfRentalExists(rental);
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
+
             _rentalDal.Delete(rental);
             return new SuccessResult(Messages.Deleted);
         }
@@ -49,36 +53,52 @@ namespace Business.Concrete
 
         public IDataResult<List<Rental>> GetAllRental()
         {
-            return new SuccessDataResult<List<Rental>>(_rentalDal.GetAll(), Messages.Listed);
+            var rentals = _rentalDal.GetAll();
+
+            return new SuccessDataResult<List<Rental>>(rentals, Messages.Listed);
         }
 
         public IDataResult<Rental> GetRentalById(int id)
         {
-            if (_rentalDal.Get(b => b.ID == id) == null)
+            var car = _rentalDal.Get(b => b.ID == id);
+            if (car == null)
             {
                 return new ErrorDataResult<Rental>(Messages.NotFound);
             }
-            return new SuccessDataResult<Rental>(_rentalDal.Get(r => r.ID == id));
+            return new SuccessDataResult<Rental>(car);
         }
 
         public IResult ReturnCar(Rental rental)
         {
-            if(rental == null)
+            var result = CheckIfRentalExists(rental);
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
             _rentalDal.ReturnCar(rental);
             return new SuccessResult(Messages.ReturnCar);
         }
 
+        [ValidationAspect(typeof(RentalValidator))]
         public IResult UpdateRental(Rental rental)
         {
+            var result = CheckIfRentalExists(rental);
+
+            if (!result.Success)
+            {
+                return result;
+            }
+            _rentalDal.Update(rental);
+            return new SuccessResult(Messages.Updated);
+        }
+        private IResult CheckIfRentalExists(Rental rental)
+        {
+
             if (rental == null)
             {
                 return new ErrorResult(Messages.NotFound);
             }
-            _rentalDal.Update(rental);
-            return new SuccessResult(Messages.Updated);
+            return new SuccessResult();
         }
     }
 }

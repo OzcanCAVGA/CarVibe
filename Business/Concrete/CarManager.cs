@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspect.Autofac.Validation;
 using Core.Utilis.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -15,86 +17,105 @@ namespace Business.Concrete
             _carDal = carDal;
         }
 
-        public IResult Add(Car car) 
+        [ValidationAspect(typeof(CarValidator))]
+        public IResult Add(Car car)
         {
-            if (car.Description.Length >= 2 && car.DailyPrice > 0)
-            {
-                _carDal.Add(car);
-                return new SuccessResult(Messages.Added);
-            }
-            else
-            {
-                return new ErrorResult(Messages.NameInvalid);
-            }
+
+            _carDal.Add(car);
+            return new SuccessResult(Messages.Added);
+
+
         }
-        public IResult Update(Car car) 
+
+        [ValidationAspect(typeof(CarValidator))]
+        public IResult Update(Car car)
         {
-            if (car == null)
+            var result = CheckIfBrandExists(car);
+
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
             _carDal.Update(car);
             return new SuccessResult(Messages.Updated);
         }
-        public IResult Delete(IDataResult<Car> car) 
+
+        public IResult Delete(Car car)
         {
-       
+
+            var result = CheckIfBrandExists(car);
+
+            if (!result.Success)
+            {
+                return result;
+            }
+            _carDal.Delete(car);
+            return new SuccessResult(Messages.Deleted);
+        }
+
+        public IDataResult<List<Car>> GetAll()
+        {
+            var currentTime = DateTime.Now.Hour;
+            if (currentTime == 01)
+            {
+                return new ErrorDataResult<List<Car>>(Messages.MaintenanceTime);
+            }
+            var cars = _carDal.GetAll();
+            return new SuccessDataResult<List<Car>>(cars, Messages.Listed);
+        }
+        public IDataResult<List<Car>> GetCarsByBrandId(int brandId)
+        {
+            var cars = _carDal.GetAll(b => b.ID == brandId);
+
+            if (cars == null || !cars.Any())
+            {
+                return new ErrorDataResult<List<Car>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<Car>>(cars, Messages.Listed);
+        }
+        public IDataResult<List<Car>> GetCarsByColorId(int colorId)
+        {
+
+            var cars = _carDal.GetAll(c => c.ID == colorId);
+
+            if (cars == null || !cars.Any())
+            {
+                return new ErrorDataResult<List<Car>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<Car>>(cars, Messages.Listed);
+
+        }
+
+        public IDataResult<Car> GetCarById(int id)
+        {
+            var car = _carDal.Get(b => b.ID == id);
+            if (car == null)
+            {
+                return new ErrorDataResult<Car>(Messages.NotFound);
+            }
+            return new SuccessDataResult<Car>(car, Messages.Listed);
+
+        }
+
+
+        public IDataResult<List<CarDetailDto>> GetCarDetails()
+        {
+            var carDetails = _carDal.GetCarDetails();
+
+            if (carDetails == null || !carDetails.Any())
+            {
+                return new ErrorDataResult<List<CarDetailDto>>(Messages.NotFound);
+            }
+            return new SuccessDataResult<List<CarDetailDto>>(carDetails, Messages.Listed);
+        }
+
+        private IResult CheckIfBrandExists(Car car)
+        {
             if (car == null)
             {
                 return new ErrorResult(Messages.NotFound);
             }
-            _carDal.Delete(car.Data);
-            return new SuccessResult(Messages.Deleted);
+            return new SuccessResult();
         }
-
-        public IDataResult<List<Car>> GetAll() 
-        {
-            if (DateTime.Now.Hour == 01)
-            {
-                return new ErrorDataResult<List<Car>>(Messages.MaintenanceTime);
-            }
-
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll(), Messages.Listed);
-        }
-        public IDataResult<List<Car>> GetCarsByBrandId(int brandId) 
-        {
-
-            if (_carDal.Get(b => b.ID == brandId) == null)
-            {
-                return new ErrorDataResult<List<Car>>(Messages.NotFound);
-            }
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.BrandID == brandId));
-        }
-        public IDataResult<List<Car>> GetCarsByColorId(int colorId) 
-        {
-            if (_carDal.Get(b => b.ID == colorId) == null)
-            {
-                return new ErrorDataResult<List<Car>>(Messages.NotFound);
-            }
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.ColorID == colorId));
-
-        }
-
-        public IDataResult<Car> GetCarById(int id) 
-        {
-            if (_carDal.Get(b => b.ID == id) == null)
-            {
-                return new ErrorDataResult<Car>(Messages.NotFound);
-            }
-            return new SuccessDataResult<Car>(_carDal.Get(b => b.ID == id));
-
-        }
-
-
-        public IDataResult<List<CarDetailDto>> GetCarDetails() 
-        {
-            if (_carDal.GetAll() == null)
-            {
-                return new ErrorDataResult<List<CarDetailDto>>(Messages.NotFound);
-            }
-            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
-        }
-
-
     }
 }

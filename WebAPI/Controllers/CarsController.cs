@@ -42,9 +42,9 @@ namespace WebAPI.Controllers
         public IActionResult Delete(int id)
         {
             var result = _carService.GetCarById(id);
-            if (result != null)
+            if (result.Success)
             {
-                _carService.Delete(result);
+                _carService.Delete(result.Data);
                 return Ok(Messages.Deleted);
             }
             return BadRequest(Messages.NotFound);

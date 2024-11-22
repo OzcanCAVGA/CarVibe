@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspect.Autofac.Validation;
 using Core.Utilis.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFrameworkk;
@@ -20,7 +22,7 @@ namespace Business.Concrete
         {
             _userDal = userDal;
         }
-
+        [ValidationAspect(typeof(UserValidator))]
         public IResult AddUser(User user)
         {
             _userDal.Add(user);
@@ -29,32 +31,51 @@ namespace Business.Concrete
 
         public IResult DeleteUser(User user)
         {
+            var result = CheckIfUserExists(user);
+            if (!result.Success)
+            {
+                return result;
+            }
+
             _userDal.Delete(user);
             return new SuccessResult(Messages.Deleted);
         }
 
         public IDataResult<List<User>> GetAllUsers()
         {
-            return new SuccessDataResult<List<User>>(_userDal.GetAll(), Messages.Listed);
+            var users = _userDal.GetAll();
+            return new SuccessDataResult<List<User>>(users, Messages.Listed);
         }
 
         public IDataResult<User> GetUserById(int id)
         {
-            if (_userDal.Get(u => u.ID == id) == null)
+            var user = _userDal.Get(u => u.ID == id);
+            if (user == null)
             {
                 return new ErrorDataResult<User>(Messages.NotFound);
             }
-            return new SuccessDataResult<User>(_userDal.Get(u => u.ID == id));
+            return new SuccessDataResult<User>(user);
+        }
+        [ValidationAspect(typeof(UserValidator))]
+        public IResult UpdateUser(User user)
+        {
+            var result = CheckIfUserExists(user);
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            _userDal.Update(user);
+            return new SuccessResult(Messages.Updated);
         }
 
-        public IResult UpdateUser(User user)
+        private IResult CheckIfUserExists(User user)
         {
             if (user == null)
             {
                 return new ErrorResult(Messages.NotFound);
             }
-            _userDal.Update(user);
-            return new SuccessResult(Messages.Updated);
+            return new SuccessResult();
         }
     }
 }

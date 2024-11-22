@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspect.Autofac.Validation;
 using Core.Utilis.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFrameworkk;
@@ -21,56 +23,67 @@ namespace Business.Concrete
             _customerDal = customerDal;
         }
 
+        [ValidationAspect(typeof(CustomerValidator))]
         public IResult AddCustomer(Customer customer)
         {
-            if (customer.CompanyName.Length >= 2)
-            {
-                _customerDal.Add(customer);
-                return new SuccessResult(Messages.Added);
-            }
-            else
-            {
-                return new ErrorResult(Messages.NameInvalid);
-            }
+            _customerDal.Add(customer);
+            return new SuccessResult(Messages.Added);
         }
 
 
         public IResult DeleteCustomer(Customer customer)
         {
-            if (customer == null)
+            var result = CheckIfCustomerExists(customer);
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
+
             _customerDal.Delete(customer);
             return new SuccessResult(Messages.Deleted);
         }
 
         public IDataResult<List<Customer>> GetAllCustomers()
         {
-            if(DateTime.Now.Hour == 22)
+
+            var currentTime = DateTime.Now.Hour;
+            if (currentTime == 01)
             {
                 return new ErrorDataResult<List<Customer>>(Messages.MaintenanceTime);
             }
-            return new SuccessDataResult<List<Customer>>(_customerDal.GetAll(), Messages.Listed);
+
+            var customers = _customerDal.GetAll();
+            return new SuccessDataResult<List<Customer>>(customers, Messages.Listed);
         }
 
         public IDataResult<Customer> GetCustomerById(int id)
         {
-            if (_customerDal.Get(b => b.ID == id) == null)
+            var customer = _customerDal.Get(b => b.ID == id);
+            if (customer == null)
             {
                 return new ErrorDataResult<Customer>(Messages.NotFound);
             }
-            return new SuccessDataResult<Customer>(_customerDal.Get(b => b.ID == id));
+            return new SuccessDataResult<Customer>(customer, Messages.Listed);
         }
 
         public IResult UpdateCustomer(Customer customer)
+        {
+            var result = CheckIfCustomerExists(customer);
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            _customerDal.Update(customer);
+            return new SuccessResult(Messages.Updated);
+        }
+        private IResult CheckIfCustomerExists(Customer customer)
         {
             if (customer == null)
             {
                 return new ErrorResult(Messages.NotFound);
             }
-            _customerDal.Update(customer);
-            return new SuccessResult(Messages.Updated);
+            return new SuccessResult();
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspect.Autofac.Validation;
 using Core.Utilis.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -21,32 +23,34 @@ namespace Business.Concrete
             _brandDal = brandDal;
         }
 
+        [ValidationAspect(typeof(BrandValidator))]
         public IResult Add(Brand brand)
         {
-            if (brand.Name.Length < 2)
-            {
-                return new ErrorResult(Messages.NameInvalid);
-            }
+
             _brandDal.Add(brand);
             return new SuccessResult(Messages.Added);
-
-
         }
 
         public IResult Delete(Brand brand)
         {
-            if (brand == null)
+            var result = CheckIfBrandExists(brand);
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
             _brandDal.Delete(brand);
             return new SuccessResult(Messages.Deleted);
         }
+
+
+        [ValidationAspect(typeof(BrandValidator))]
         public IResult Update(Brand brand)
         {
-            if (brand == null)
+
+            var result = CheckIfBrandExists(brand);
+            if (!result.Success)
             {
-                return new ErrorResult(Messages.NotFound);
+                return result;
             }
             _brandDal.Update(brand);
             return new SuccessResult(Messages.Updated);
@@ -64,14 +68,22 @@ namespace Business.Concrete
 
         public IDataResult<Brand> GetById(int id)
         {
-            if (_brandDal.Get(b => b.ID == id) == null)
+            var brand = _brandDal.Get(b => b.ID == id);
+            if (brand == null)
             {
                 return new ErrorDataResult<Brand>(Messages.NotFound);
             }
-            return new SuccessDataResult<Brand>(_brandDal.Get(b => b.ID == id), Messages.Listed);
+            return new SuccessDataResult<Brand>(brand, Messages.Listed);
 
         }
 
-
+        private IResult CheckIfBrandExists(Brand brand)
+        {
+            if (brand == null)
+            {
+                return new ErrorResult(Messages.NotFound);
+            }
+            return new SuccessResult();
+        }
     }
 }
